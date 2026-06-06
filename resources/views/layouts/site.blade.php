@@ -16,18 +16,27 @@
 </head>
 <body>
     <div class="ambient" aria-hidden="true">
+        <div class="ambient-mesh"></div>
+        <div class="ambient-aurora"></div>
         <div class="ambient-orb a"></div>
         <div class="ambient-orb b"></div>
-        <div class="ambient-grid"></div>
+        <div class="ambient-orb c"></div>
+        <div class="ambient-vignette"></div>
     </div>
 
     @include('partials.site-header')
 
-    <main class="page">
-        <div class="container">
-            @yield('content')
-        </div>
-    </main>
+    @hasSection('full-width')
+        <main class="hero-landing">
+            @yield('full-width')
+        </main>
+    @else
+        <main class="page">
+            <div class="container">
+                @yield('content')
+            </div>
+        </main>
+    @endif
 
     <footer class="site-footer">
         <div class="container" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
