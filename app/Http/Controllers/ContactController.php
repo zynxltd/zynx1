@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\ContactMessageMail;
 use App\Models\ContactMessage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
 
 class ContactController extends Controller
@@ -26,7 +28,14 @@ class ContactController extends Controller
             'message' => ['required', 'string', 'max:5000'],
         ]);
 
-        ContactMessage::create($validated);
+        $contactMessage = ContactMessage::create($validated);
+
+        try {
+            Mail::to(config('booking.notification_email'))
+                ->send(new ContactMessageMail($contactMessage));
+        } catch (\Throwable $e) {
+            report($e);
+        }
 
         return redirect()
             ->route('contact')
