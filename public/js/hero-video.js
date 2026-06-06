@@ -1,6 +1,5 @@
 (function () {
     var media = document.querySelector('.hero-media');
-    var video = document.querySelector('.hero-video');
     var canvas = document.getElementById('hero-video-canvas');
     if (!media || !canvas) return;
 
@@ -8,6 +7,11 @@
     var raf = null;
     var start = performance.now();
     var videoReady = false;
+    var rotateTimer = null;
+    var isRotateMode = media.classList.contains('hero-media--rotate');
+    var crossfadeMs = 1800;
+    var kenVariants = ['zoom-in', 'zoom-out', 'pan-left', 'pan-right'];
+    var progressDots = media.querySelectorAll('.hero-media-progress-dot');
 
     var blobs = [
         { x: 0.25, y: 0.35, r: 0.48, hue: 225, phase: 0 },
@@ -68,6 +72,7 @@
     }
 
     function startCanvas() {
+        if (isRotateMode) return;
         media.classList.add('hero-media--canvas');
         canvas.hidden = false;
         resize();
@@ -83,50 +88,222 @@
         media.classList.remove('hero-media--canvas');
     }
 
-    function startVideo() {
-        if (videoReady) return;
-        videoReady = true;
-        media.classList.add('hero-media--video');
-        video.classList.add('is-ready');
-        stopCanvas();
+    function markVideoReady() {
+        if (!videoReady) {
+            videoReady = true;
+            media.classList.add('hero-media--video');
+            stopCanvas();
+        }
     }
 
-    function initVideo() {
+    function setKenBurns(video, sourceIndex) {
+        video.dataset.ken = kenVariants[sourceIndex % kenVariants.length];
+    }
+
+    function setTone(sourceIndex, delay) {
+        window.setTimeout(function () {
+            media.setAttribute('data-hero-tone', String(sourceIndex % 4));
+        }, delay || 0);
+    }
+
+    function restartProgress(sourceIndex, interval) {
+        progressDots.forEach(function (dot, i) {
+            var fill = dot.querySelector('.hero-media-progress-fill');
+            dot.classList.toggle('is-active', i === sourceIndex);
+            if (fill) {
+                fill.style.animation = 'none';
+                void fill.offsetWidth;
+                if (i === sourceIndex) {
+                    fill.style.animation = 'heroProgressFill ' + (interval / 1000) + 's linear forwards';
+                }
+            }
+        });
+    }
+
+    function loadSource(video, url) {
+        return new Promise(function (resolve, reject) {
+            var resolved = video.dataset.src === url && video.readyState >= 4;
+
+            if (resolved) {
+                resolve();
+                return;
+            }
+
+            function cleanup() {
+                video.removeEventListener('canplaythrough', onReady);
+                video.removeEventListener('error', onError);
+            }
+
+            function onReady() {
+                cleanup();
+                video.dataset.src = url;
+                resolve();
+            }
+
+            function onError() {
+                cleanup();
+                reject();
+            }
+
+            video.addEventListener('canplaythrough', onReady);
+            video.addEventListener('error', onError);
+            video.src = url;
+            video.load();
+        });
+    }
+
+    function playLayer(layer) {
+        var video = layer.querySelector('.hero-video');
+        if (!video) return;
+        video.loop = true;
+        if (video.currentTime < 0.05 || video.ended) {
+            video.currentTime = 0;
+        }
+        var attempt = video.play();
+        if (attempt && attempt.catch) {
+            attempt.catch(function () {});
+        }
+    }
+
+    function initSingleVideo(video) {
         if (!video) return;
 
-        video.addEventListener('canplay', startVideo);
-        video.addEventListener('loadeddata', startVideo);
+        function showVideo() {
+            markVideoReady();
+            video.classList.add('is-ready');
+        }
 
+        video.addEventListener('canplaythrough', showVideo);
+        video.addEventListener('loadeddata', showVideo);
         video.addEventListener('error', function () {
             if (!videoReady) startCanvas();
         });
 
         video.load();
+        video.loop = true;
+        video.play().catch(function () {});
+    }
 
-        var playAttempt = video.play();
-        if (playAttempt && playAttempt.catch) {
-            playAttempt.catch(function () {
-                if (!videoReady) startCanvas();
+    function initRotatingVideos(sources, interval) {
+        var layers = Array.from(media.querySelectorAll('.hero-video-layer'));
+        if (layers.length < 2 || sources.length < 2) return;
+
+        media.style.setProperty('--hero-clip-duration', (interval / 1000) + 's');
+        media.style.setProperty('--hero-crossfade', (crossfadeMs / 1000) + 's');
+
+        var index = 0;
+        var activeLayer = layers[0];
+        var hiddenLayer = layers[1];
+        var swapping = false;
+
+        function nextIndex(current) {
+            return (current + 1) % sources.length;
+        }
+
+        function prepareLayer(layer, sourceIndex) {
+            var video = layer.querySelector('.hero-video');
+            if (!video) return Promise.resolve();
+
+            layer.classList.remove('is-active', 'is-leaving');
+            setKenBurns(video, sourceIndex);
+
+            return loadSource(video, sources[sourceIndex]).then(function () {
+                video.pause();
+                video.currentTime = 0;
             });
         }
+
+        function crossfadeToNext() {
+            if (swapping) return;
+
+            var video = hiddenLayer.querySelector('.hero-video');
+            if (!video || video.readyState < 4) return;
+
+            swapping = true;
+            var next = nextIndex(index);
+
+            setTone(next, 0);
+            restartProgress(next, interval);
+            playLayer(hiddenLayer);
+            hiddenLayer.classList.add('is-active');
+            activeLayer.classList.add('is-leaving');
+
+            window.setTimeout(function () {
+                activeLayer.classList.remove('is-active', 'is-leaving');
+                var videoOut = activeLayer.querySelector('.hero-video');
+                if (videoOut) videoOut.pause();
+
+                var previous = activeLayer;
+                activeLayer = hiddenLayer;
+                hiddenLayer = previous;
+                index = next;
+                swapping = false;
+
+                prepareLayer(hiddenLayer, nextIndex(index)).catch(function () {});
+            }, crossfadeMs);
+        }
+
+        prepareLayer(hiddenLayer, nextIndex(0))
+            .then(function () {
+                setKenBurns(activeLayer.querySelector('.hero-video'), 0);
+                return loadSource(activeLayer.querySelector('.hero-video'), sources[0]);
+            })
+            .then(function () {
+                markVideoReady();
+                setTone(0, 0);
+                restartProgress(0, interval);
+                playLayer(activeLayer);
+                activeLayer.classList.add('is-active');
+                rotateTimer = window.setInterval(crossfadeToNext, interval);
+            })
+            .catch(function () {
+                startCanvas();
+            });
+    }
+
+    function initVideo() {
+        var sources = [];
+        try {
+            sources = JSON.parse(media.getAttribute('data-hero-videos') || '[]');
+        } catch (e) {
+            sources = [];
+        }
+
+        var interval = parseInt(media.getAttribute('data-hero-rotate') || '0', 10);
+        var rotate = isRotateMode && sources.length > 1 && interval > 0;
+
+        if (rotate) {
+            initRotatingVideos(sources, interval);
+            return;
+        }
+
+        initSingleVideo(media.querySelector('.hero-video'));
     }
 
     var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     resize();
 
-    if (!reducedMotion && video) {
+    if (!reducedMotion) {
         initVideo();
-        window.setTimeout(function () {
-            if (!videoReady) startCanvas();
-        }, 1500);
+        if (!isRotateMode) {
+            window.setTimeout(function () {
+                if (!videoReady) startCanvas();
+            }, 1500);
+        }
     } else {
         startCanvas();
-        if (video) video.pause();
-        if (reducedMotion) draw(performance.now());
+        media.querySelectorAll('.hero-video').forEach(function (video) {
+            video.pause();
+        });
+        draw(performance.now());
     }
 
     window.addEventListener('resize', function () {
         if (!videoReady) resize();
+    });
+
+    window.addEventListener('pagehide', function () {
+        if (rotateTimer) window.clearInterval(rotateTimer);
     });
 })();
