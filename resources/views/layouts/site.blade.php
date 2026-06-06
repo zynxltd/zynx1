@@ -3,11 +3,15 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    @include('partials.theme-init')
     @include('partials.seo')
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="{{ asset('css/site.css') }}" />
+    <link rel="stylesheet" href="{{ asset('css/theme.css') }}" />
+    <link rel="stylesheet" href="{{ asset('css/brand.css') }}" />
+    <link rel="stylesheet" href="{{ asset('css/mobile.css') }}" />
     @stack('head')
 </head>
 <body>
@@ -17,19 +21,7 @@
         <div class="ambient-grid"></div>
     </div>
 
-    <header class="site-header">
-        <div class="container site-header-inner">
-            <a href="{{ route('home') }}" class="brand" aria-label="zynx1 home">
-                <span class="brand-word">zynx</span><span class="brand-one">1</span>
-            </a>
-            <nav class="nav" aria-label="Main">
-                <a href="{{ route('home') }}#services">Services</a>
-                <a href="{{ route('home') }}#process">Process</a>
-                <a href="{{ route('contact') }}" @class(['active' => request()->routeIs('contact')])>Contact</a>
-            </nav>
-            <a href="{{ route('book') }}" class="button button-primary">Book consultation</a>
-        </div>
-    </header>
+    @include('partials.site-header')
 
     <main class="page">
         <div class="container">
@@ -48,6 +40,8 @@
         </div>
     </footer>
 
+    <script src="{{ asset('js/theme.js') }}" defer></script>
+    <script src="{{ asset('js/mobile-nav.js') }}" defer></script>
     @stack('scripts')
 </body>
 </html>

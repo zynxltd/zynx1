@@ -3,6 +3,7 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        @include('partials.theme-init')
         @php
             $title = 'Software, AI, Data & Automation';
             $description = 'Custom software, apps and websites for growing businesses. Data, AI and automation built around how you work.';
@@ -14,6 +15,10 @@
             href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap"
             rel="stylesheet"
         />
+        <link rel="stylesheet" href="{{ asset('css/site.css') }}" />
+        <link rel="stylesheet" href="{{ asset('css/theme.css') }}" />
+        <link rel="stylesheet" href="{{ asset('css/brand.css') }}" />
+        <link rel="stylesheet" href="{{ asset('css/mobile.css') }}" />
         <style>
             :root {
                 --bg: #050508;
@@ -57,16 +62,16 @@
                 animation: orb-float 20s ease-in-out infinite alternate;
             }
 
-            .ambient-orb.a { width: 600px; height: 600px; top: -15%; left: 20%; background: rgba(109, 143, 255, 0.18); }
-            .ambient-orb.b { width: 500px; height: 500px; top: 30%; right: -10%; background: rgba(52, 211, 153, 0.1); animation-delay: -8s; }
-            .ambient-orb.c { width: 400px; height: 400px; bottom: 10%; left: -5%; background: rgba(192, 132, 252, 0.08); animation-delay: -14s; }
+            .ambient-orb.a { width: 600px; height: 600px; top: -15%; left: 20%; background: var(--orb-a, rgba(109, 143, 255, 0.18)); }
+            .ambient-orb.b { width: 500px; height: 500px; top: 30%; right: -10%; background: var(--orb-b, rgba(52, 211, 153, 0.1)); animation-delay: -8s; }
+            .ambient-orb.c { width: 400px; height: 400px; bottom: 10%; left: -5%; background: var(--orb-c, rgba(192, 132, 252, 0.08)); animation-delay: -14s; }
 
             .ambient-grid {
                 position: absolute;
                 inset: 0;
                 background-image:
-                    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
-                    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+                    linear-gradient(var(--grid-line, rgba(255,255,255,0.025)) 1px, transparent 1px),
+                    linear-gradient(90deg, var(--grid-line, rgba(255,255,255,0.025)) 1px, transparent 1px);
                 background-size: 64px 64px;
                 mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, black, transparent);
             }
@@ -77,92 +82,6 @@
             }
 
             a { color: inherit; text-decoration: none; }
-
-            .container {
-                width: min(var(--max), calc(100% - 2rem));
-                margin-inline: auto;
-            }
-
-            /* header */
-            .site-header {
-                position: fixed;
-                inset: 0 0 auto;
-                z-index: 100;
-                backdrop-filter: blur(24px) saturate(1.5);
-                background: rgba(5, 5, 8, 0.7);
-                border-bottom: 1px solid var(--line);
-            }
-
-            .site-header-inner {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                gap: 1rem;
-                padding: 0.85rem 0;
-            }
-
-            .brand {
-                display: inline-flex;
-                align-items: baseline;
-                font-size: 1.3rem;
-                letter-spacing: 0.03em;
-                text-transform: lowercase;
-                font-weight: 700;
-            }
-
-            .brand-word {
-                background: linear-gradient(135deg, #fff 20%, #93a8ff);
-                -webkit-background-clip: text;
-                background-clip: text;
-                color: transparent;
-            }
-
-            .brand-one {
-                font-weight: 800;
-                background: linear-gradient(180deg, #d1d5db, #6b7280);
-                -webkit-background-clip: text;
-                background-clip: text;
-                color: transparent;
-            }
-
-            .nav {
-                display: flex;
-                gap: 1.75rem;
-                font-size: 0.9rem;
-                color: var(--muted);
-            }
-
-            .nav a:hover { color: var(--text); }
-
-            .button {
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                padding: 0.75rem 1.35rem;
-                border-radius: 10px;
-                font-weight: 600;
-                font-size: 0.9rem;
-                transition: transform 0.2s, box-shadow 0.2s;
-            }
-
-            .button:hover { transform: translateY(-2px); }
-
-            .button-primary {
-                background: linear-gradient(135deg, #5b7cfa, #4f6ef7);
-                color: #fff;
-                box-shadow: 0 0 30px var(--glow), 0 6px 20px rgba(0,0,0,0.5);
-            }
-
-            .button-ghost {
-                background: rgba(255,255,255,0.04);
-                border: 1px solid var(--line);
-                color: var(--text);
-            }
-
-            .button-ghost:hover {
-                background: rgba(255,255,255,0.08);
-                border-color: rgba(255,255,255,0.14);
-            }
 
             /* hero */
             .hero {
@@ -558,8 +477,12 @@
             }
 
             .service-card p { color: var(--muted); font-size: 0.92rem; }
+            a.service-card { transition: border-color 0.2s, transform 0.2s; }
+            a.service-card:hover { border-color: rgba(109,143,255,0.3); transform: translateY(-2px); }
+
             .service-card:nth-child(1) .num { color: var(--accent); }
             .service-card:nth-child(2) .num { color: var(--accent-3); }
+            .service-card:nth-child(4) .num { color: var(--accent-2); }
 
             .process-grid {
                 display: grid;
@@ -627,13 +550,45 @@
             }
 
             @media (max-width: 960px) {
-                .nav { display: none; }
-                .hero-grid { grid-template-columns: 1fr; }
+                .hero-grid { grid-template-columns: 1fr; gap: 2rem; }
                 .editor { transform: none; }
                 .editor:hover { transform: none; }
                 .bento, .services-grid, .process-grid { grid-template-columns: 1fr; }
                 .bento .card, .bento .card:nth-child(1), .bento .card:nth-child(2) { grid-column: span 1; }
-                .hero { min-height: auto; padding-top: 5.5rem; }
+                .hero { min-height: auto; padding: 5.5rem 0 3rem; }
+                .editor-wrap { margin-top: 0.5rem; }
+            }
+
+            @media (max-width: 768px) {
+                .container { width: min(var(--max), calc(100% - 1.25rem)); max-width: 100%; }
+                main, section, .hero, .hero-grid, .hero-copy { max-width: 100%; overflow-x: hidden; }
+                .hero h1 { font-size: clamp(2rem, 8vw, 2.6rem); }
+                .hero-lead { font-size: 1rem; }
+                .hero-actions { flex-direction: column; }
+                .hero-actions .button { width: 100%; justify-content: center; }
+                .hero-pills { gap: 0.5rem; }
+                .pill { font-size: 0.82rem; }
+                .editor-wrap { max-width: 100%; overflow: hidden; }
+                .editor { max-width: 100%; }
+                .editor-body { max-height: 300px; }
+                .code-pane { overflow-x: auto; max-width: 100%; -webkit-overflow-scrolling: touch; }
+                .code-pane pre { font-size: 0.65rem; max-width: none; }
+                .editor-float { display: none; }
+                .editor-badge { right: 8px; left: 8px; bottom: -10px; font-size: 0.65rem; justify-content: center; }
+                section:not(.hero) { padding: 3.5rem 0; }
+                .section-head h2 { font-size: clamp(1.5rem, 6vw, 2rem); }
+                .cta-wrap { overflow: hidden; }
+                .cta-actions { flex-direction: column; }
+                .cta-actions .button { width: 100%; justify-content: center; }
+                .nav-desktop { display: none !important; }
+            }
+
+            @media (max-width: 480px) {
+                .hero { padding-top: 5rem; }
+                .eyebrow { font-size: 0.75rem; }
+                .editor-body { max-height: 260px; }
+                .line-nums { display: none; }
+                .editor-body { grid-template-columns: 1fr; }
             }
 
             @media (prefers-reduced-motion: reduce) {
@@ -650,18 +605,7 @@
             <div class="ambient-grid"></div>
         </div>
 
-        <header class="site-header">
-            <div class="container site-header-inner">
-                <a href="/" class="brand"><span class="brand-word">zynx</span><span class="brand-one">1</span></a>
-                <nav class="nav" aria-label="Primary">
-                    <a href="#why">Why Zynx</a>
-                    <a href="#services">Services</a>
-                    <a href="#process">How we work</a>
-                    <a href="{{ route('contact') }}">Contact</a>
-                </nav>
-                <a class="button button-primary" href="{{ route('book') }}">Book a consultation</a>
-            </div>
-        </header>
+        @include('partials.site-header')
 
         <main>
             <section class="hero">
@@ -792,21 +736,13 @@ $result = $engine-><span class="fn">deploy</span>(
                         <p>Reduce manual work, improve visibility and create better experiences through software, data and automation.</p>
                     </div>
                     <div class="services-grid">
-                        <article class="card service-card">
-                            <span class="num">01 / design_build</span>
-                            <span class="label">Design & Build</span>
-                            <p>Custom software, apps and digital platforms — from prototypes to production-ready solutions.</p>
-                        </article>
-                        <article class="card service-card">
-                            <span class="num">02 / data_ai</span>
-                            <span class="label">Data & AI</span>
-                            <p>Dashboards, trends and AI applied where it creates genuine value for your team.</p>
-                        </article>
-                        <article class="card service-card">
-                            <span class="num">03 / automation</span>
-                            <span class="label">Automation & Integration</span>
-                            <p>Connect systems, eliminate repetitive tasks and automate workflows.</p>
-                        </article>
+                        @foreach (config('zynx-services') as $slug => $service)
+                            <a href="{{ route('services.show', $slug) }}" class="card service-card" style="text-decoration:none;color:inherit;">
+                                <span class="num">{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }} / {{ str_replace('-', '_', $slug) }}</span>
+                                <span class="label">{{ $service['label'] }}</span>
+                                <p>{{ $service['description'] }}</p>
+                            </a>
+                        @endforeach
                     </div>
                 </div>
             </section>
@@ -842,7 +778,7 @@ $result = $engine-><span class="fn">deploy</span>(
 
         <footer class="site-footer">
             <div class="container" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
-                <span><span class="brand"><span class="brand-word">zynx</span><span class="brand-one">1</span></span> — Software, AI, Data & Automation</span>
+                <span>@include('partials.brand', ['asLink' => false, 'compact' => true]) — Software, AI, Data & Automation</span>
                 <span>
                     <a href="{{ route('contact') }}">Contact</a>
                     &middot;
@@ -850,5 +786,7 @@ $result = $engine-><span class="fn">deploy</span>(
                 </span>
             </div>
         </footer>
+        <script src="{{ asset('js/theme.js') }}" defer></script>
+        <script src="{{ asset('js/mobile-nav.js') }}" defer></script>
     </body>
 </html>

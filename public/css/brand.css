@@ -1,0 +1,48 @@
+.brand {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0;
+    text-decoration: none;
+    color: inherit;
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    text-transform: lowercase;
+    line-height: 1;
+    transition: opacity 0.2s;
+}
+
+a.brand:hover {
+    opacity: 0.85;
+}
+
+.brand-word {
+    background: linear-gradient(135deg, #ffffff 20%, #93a8ff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.brand-one {
+    font-weight: 800;
+    background: linear-gradient(180deg, #d1d5db 0%, #6b7280 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.brand-compact {
+    font-size: 1.15rem;
+}
+
+html[data-theme="light"] .brand-word {
+    background: linear-gradient(135deg, #12121a 15%, #4f6ef7 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+html[data-theme="light"] .brand-one {
+    background: linear-gradient(180deg, #6b7280 0%, #374151 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+}

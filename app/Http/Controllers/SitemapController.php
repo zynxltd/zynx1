@@ -14,6 +14,10 @@ class SitemapController extends Controller
             ['loc' => route('contact'), 'priority' => '0.8'],
         ];
 
+        foreach (config('zynx-services') as $slug => $service) {
+            $urls[] = ['loc' => route('services.show', $slug), 'priority' => '0.8'];
+        }
+
         $xml = view('sitemap', compact('urls'))->render();
 
         return response($xml, 200)->header('Content-Type', 'application/xml');

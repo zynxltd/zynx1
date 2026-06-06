@@ -23,16 +23,14 @@
         <p>Pick a date and time for a free 30-minute call. We'll discuss your goals and how we can help with software, data, AI or automation.</p>
     </div>
 
-    @if ($errors->any())
-        <div class="alert alert-error" role="alert">
-            <strong>Please fix the following:</strong>
-            <ul style="margin:0.5rem 0 0;padding-left:1.25rem;">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
+    <div class="alert alert-error" id="form-errors" role="alert" @if(!$errors->any()) hidden @endif>
+        <strong>Please fix the following:</strong>
+        <ul id="form-errors-list" style="margin:0.5rem 0 0;padding-left:1.25rem;">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
 
     <form method="POST" action="{{ route('book.store') }}" id="booking-form" novalidate>
         @csrf
@@ -52,7 +50,6 @@
                 <div class="slots" id="slots" role="listbox" aria-label="Available time slots">
                     <span class="slots-empty">Select a date to see available times</span>
                 </div>
-                @error('scheduled_at')<p class="field-error" id="error-scheduled_at">{{ $message }}</p>@enderror
                 <p class="field-error" id="error-scheduled_at-js" hidden></p>
             </div>
 
@@ -61,36 +58,31 @@
                     <div class="field @error('name') is-invalid @enderror" data-field="name">
                         <label for="name">Name *</label>
                         <input type="text" id="name" name="name" value="{{ old('name') }}" required minlength="2" maxlength="120" autocomplete="name" />
-                        @error('name')<p class="field-error">{{ $message }}</p>@enderror
                         <p class="field-error" data-error-for="name" hidden></p>
                     </div>
                     <div class="field @error('email') is-invalid @enderror" data-field="email">
                         <label for="email">Email *</label>
                         <input type="email" id="email" name="email" value="{{ old('email') }}" required maxlength="255" autocomplete="email" inputmode="email" />
-                        @error('email')<p class="field-error">{{ $message }}</p>@enderror
                         <p class="field-error" data-error-for="email" hidden></p>
                     </div>
                     <div class="form-grid two">
                         <div class="field @error('company') is-invalid @enderror" data-field="company">
                             <label for="company">Company</label>
                             <input type="text" id="company" name="company" value="{{ old('company') }}" maxlength="120" autocomplete="organization" />
-                            @error('company')<p class="field-error">{{ $message }}</p>@enderror
                             <p class="field-error" data-error-for="company" hidden></p>
                         </div>
                         <div class="field @error('phone') is-invalid @enderror" data-field="phone">
                             <label for="phone">Phone *</label>
                             <input type="tel" id="phone" name="phone" value="{{ old('phone') }}" required maxlength="20" autocomplete="tel" inputmode="tel" placeholder="+447123456789" />
-                            @error('phone')<p class="field-error">{{ $message }}</p>@enderror
                             <p class="field-error" data-error-for="phone" hidden></p>
                         </div>
                     </div>
                     <div class="field @error('message') is-invalid @enderror" data-field="message">
                         <label for="message">What would you like to discuss? *</label>
                         <textarea id="message" name="message" rows="4" required minlength="10" maxlength="2000">{{ old('message') }}</textarea>
-                        @error('message')<p class="field-error">{{ $message }}</p>@enderror
                         <p class="field-error" data-error-for="message" hidden></p>
                     </div>
-                    <button type="submit" class="button button-primary" id="submit-btn" disabled>
+                    <button type="submit" class="button button-primary" id="submit-btn">
                         Confirm booking
                     </button>
                 </div>
@@ -116,10 +108,9 @@
     const submitBtn = document.getElementById('submit-btn');
     const slotErrorEl = document.getElementById('error-scheduled_at-js');
 
-    const nameInput = document.getElementById('name');
-    const emailInput = document.getElementById('email');
-    const phoneInput = document.getElementById('phone');
-    const messageInput = document.getElementById('message');
+    const formErrors = document.getElementById('form-errors');
+    const formErrorsList = document.getElementById('form-errors-list');
+    const fields = ['name', 'email', 'phone', 'message'];
 
     const namePattern = /^[\p{L}\s'\-.]+$/u;
     const phonePattern = /^\+?[0-9][0-9\s\-().]{6,18}[0-9]$/;
@@ -157,77 +148,94 @@
         },
     };
 
-    function showFieldError(field, message) {
+    function getFieldMessage(field) {
+        const input = document.getElementById(field);
+        if (!input) return '';
+        return validators[field](input.value);
+    }
+
+    function showFieldError(field, message, show = true) {
         const wrapper = document.querySelector(`[data-field="${field}"]`);
         const errorEl = wrapper?.querySelector(`[data-error-for="${field}"]`);
+        const input = document.getElementById(field);
         if (!wrapper || !errorEl) return;
-        if (message) {
+
+        if (message && show) {
             wrapper.classList.add('is-invalid');
             errorEl.textContent = message;
             errorEl.hidden = false;
-        } else {
+            input?.setAttribute('aria-invalid', 'true');
+        } else if (!message) {
             wrapper.classList.remove('is-invalid');
             errorEl.textContent = '';
             errorEl.hidden = true;
+            input?.removeAttribute('aria-invalid');
         }
     }
 
-    function showSlotError(message) {
-        if (message) {
+    function showSlotError(message, show = true) {
+        if (message && show) {
             slotsPanel.classList.add('is-invalid');
             slotErrorEl.textContent = message;
             slotErrorEl.hidden = false;
-        } else {
+        } else if (!message) {
             slotsPanel.classList.remove('is-invalid');
             slotErrorEl.textContent = '';
             slotErrorEl.hidden = true;
         }
     }
 
-    function validateField(field) {
-        const input = document.getElementById(field);
-        if (!input) return true;
-        const message = validators[field](input.value);
-        showFieldError(field, message);
-        return !message;
+    function showErrorSummary(messages) {
+        if (!messages.length) {
+            formErrors.hidden = true;
+            formErrorsList.innerHTML = '';
+            return;
+        }
+        formErrors.hidden = false;
+        formErrorsList.innerHTML = messages.map(m => `<li>${m}</li>`).join('');
+        formErrors.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
-    function validateSlot() {
-        const message = validators.scheduled_at();
-        showSlotError(message);
-        return !message;
+    function validateAll(showErrors = true) {
+        const messages = [];
+
+        fields.forEach(field => {
+            const message = getFieldMessage(field);
+            showFieldError(field, message, showErrors);
+            if (message) messages.push(message);
+        });
+
+        const slotMessage = validators.scheduled_at();
+        showSlotError(slotMessage, showErrors);
+        if (slotMessage) messages.push(slotMessage);
+
+        if (showErrors) showErrorSummary(messages);
+
+        return messages.length === 0;
     }
 
-    function formIsValid() {
-        return ['name', 'email', 'phone', 'message'].every(validateField) && validateSlot();
-    }
-
-    function updateSubmitState() {
-        submitBtn.disabled = !formIsValid();
-    }
-
-    ['name', 'email', 'phone', 'message'].forEach(field => {
+    fields.forEach(field => {
         const input = document.getElementById(field);
         input.addEventListener('input', () => {
-            if (input.closest('.is-invalid') || input.value.trim()) {
-                validateField(field);
+            const message = getFieldMessage(field);
+            if (message) {
+                showFieldError(field, message, true);
+            } else {
+                showFieldError(field, '', true);
             }
-            updateSubmitState();
         });
         input.addEventListener('blur', () => {
-            validateField(field);
-            updateSubmitState();
+            showFieldError(field, getFieldMessage(field), true);
         });
     });
 
     form.addEventListener('submit', (e) => {
-        const valid = formIsValid();
-        if (!valid) {
+        if (!validateAll(true)) {
             e.preventDefault();
-            ['name', 'email', 'phone', 'message'].forEach(validateField);
-            validateSlot();
-            const firstInvalid = form.querySelector('.is-invalid input, .is-invalid textarea') || slotsPanel;
-            firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            const firstInvalid = form.querySelector('.field.is-invalid input, .field.is-invalid textarea') || slotsPanel;
+            if (firstInvalid && firstInvalid !== formErrors) {
+                firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
         }
     });
 
@@ -297,7 +305,6 @@
         selectedSlot = null;
         scheduledInput.value = '';
         showSlotError('');
-        updateSubmitState();
         renderCalendar();
         slotsEl.innerHTML = '<span class="slots-empty">Loading…</span>';
 
@@ -327,7 +334,6 @@
         slotsEl.querySelectorAll('.slot-btn').forEach(btn => {
             btn.classList.toggle('selected', btn.dataset.slot === iso);
         });
-        updateSubmitState();
     }
 
     renderCalendar();
@@ -340,7 +346,21 @@
         selectDate(selectedDate).then(() => selectSlot(scheduledInput.value));
     }
 
-    updateSubmitState();
+    @if ($errors->has('name'))
+        showFieldError('name', @json($errors->first('name')), true);
+    @endif
+    @if ($errors->has('email'))
+        showFieldError('email', @json($errors->first('email')), true);
+    @endif
+    @if ($errors->has('phone'))
+        showFieldError('phone', @json($errors->first('phone')), true);
+    @endif
+    @if ($errors->has('message'))
+        showFieldError('message', @json($errors->first('message')), true);
+    @endif
+    @if ($errors->has('scheduled_at'))
+        showSlotError(@json($errors->first('scheduled_at')), true);
+    @endif
 })();
 </script>
 @endpush
