@@ -2,7 +2,16 @@
 
 @section('full-width')
     <div class="page-hero-bg">
-        @include('partials.hero-media')
+        @include('partials.hero-media', [
+            'videos' => [
+                asset('videos/hero-bg-1.mp4'),
+                asset('videos/hero-bg-2.mp4'),
+                asset('videos/hero-bg-3.mp4'),
+                asset('videos/hero-bg-4.mp4'),
+            ],
+            'rotate' => true,
+            'rotateInterval' => 5000,
+        ])
 
         <div class="container page-content">
             <div class="page-head">

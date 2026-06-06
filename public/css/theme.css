@@ -119,11 +119,76 @@ html[data-theme="light"] .button-primary {
 
 html[data-theme="light"] .button-ghost {
     background: rgba(0, 0, 0, 0.03);
+    color: var(--text);
+    border-color: rgba(0, 0, 0, 0.12);
 }
 
 html[data-theme="light"] .button-ghost:hover {
     background: rgba(0, 0, 0, 0.06);
+    border-color: rgba(0, 0, 0, 0.18);
+}
+
+html[data-theme="light"] .home-hero-intro,
+html[data-theme="light"] .home-hero-cta {
+    text-shadow: none;
+}
+
+html[data-theme="light"] .hero-prefix {
+    color: var(--text);
+    text-shadow: none;
+}
+
+html[data-theme="light"] .home-hero-tagline {
+    color: var(--muted);
+}
+
+html[data-theme="light"] .home-hero-lead {
+    color: var(--muted);
+}
+
+html[data-theme="light"] .hero-scroll-word {
+    background: linear-gradient(105deg, #12121a 0%, var(--accent) 42%, var(--accent-2) 88%);
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+html[data-theme="light"] .hero-scroll-word:nth-child(2) {
+    background: linear-gradient(105deg, #12121a 0%, var(--accent-2) 48%, #047857 92%);
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+html[data-theme="light"] .hero-scroll-word:nth-child(3) {
+    background: linear-gradient(105deg, #12121a 0%, var(--accent-3) 42%, var(--accent) 90%);
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+html[data-theme="light"] .hero-scroll-word:nth-child(4) {
+    background: linear-gradient(105deg, #92400e 0%, #ea580c 38%, var(--accent-3) 88%);
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+html[data-theme="light"] .home-hero-actions .button-ghost {
+    background: rgba(255, 255, 255, 0.82);
     border-color: rgba(0, 0, 0, 0.14);
+    color: var(--text);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+}
+
+html[data-theme="light"] .home-hero-actions .button-ghost:hover {
+    background: #fff;
+    border-color: rgba(79, 110, 247, 0.35);
+}
+
+html[data-theme="light"] .page-hero-bg .page-head {
+    text-shadow: none;
+}
+
+html[data-theme="light"] .page-hero-bg .page-head p {
+    color: var(--muted);
 }
 
 html[data-theme="light"] .cal-day.selected,
@@ -246,17 +311,12 @@ html[data-theme="light"] .home-hero-eyebrow {
     border-color: rgba(79, 110, 247, 0.18);
 }
 
-html[data-theme="light"] .page-hero-bg .page-head {
-    text-shadow: 0 1px 12px rgba(255, 255, 255, 0.6);
-}
-
-html[data-theme="light"] .page-hero-bg .page-head p {
-    color: var(--muted);
-}
-
 html[data-theme="light"] .hero-media-vignette {
     mix-blend-mode: normal;
-    opacity: 0.55;
+    opacity: 1;
+    background:
+        radial-gradient(ellipse 90% 80% at 50% 45%, transparent 35%, rgba(244, 246, 251, 0.4) 100%),
+        radial-gradient(ellipse 120% 100% at 50% 100%, rgba(244, 246, 251, 0.5), transparent 55%);
 }
 
 html[data-theme="light"] .hero-media-grain {

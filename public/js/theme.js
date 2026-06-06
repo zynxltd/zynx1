@@ -19,10 +19,14 @@
         }
     }
 
+    function toggleTheme() {
+        setTheme(getTheme() === 'light' ? 'dark' : 'light');
+    }
+
+    window.zynxTheme = { getTheme, setTheme, toggleTheme };
+
     if (toggle) {
         toggle.setAttribute('aria-pressed', getTheme() === 'light' ? 'true' : 'false');
-        toggle.addEventListener('click', () => {
-            setTheme(getTheme() === 'light' ? 'dark' : 'light');
-        });
+        toggle.addEventListener('click', toggleTheme);
     }
 })();
