@@ -34,8 +34,36 @@ html[data-theme="light"] {
     --shadow: rgba(0, 0, 0, 0.5);
 }
 
-.site-header {
-    background: var(--header-bg);
+html[data-theme="light"] .site-header-bar {
+    background: rgba(255, 255, 255, 0.78);
+    border-color: rgba(0, 0, 0, 0.08);
+    box-shadow:
+        0 0 0 1px rgba(79, 110, 247, 0.06),
+        0 12px 36px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+html[data-theme="light"] .site-header-bar::before {
+    opacity: 0.45;
+}
+
+html[data-theme="light"] .nav-pills {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: rgba(0, 0, 0, 0.06);
+}
+
+html[data-theme="light"] .nav-pill.is-active {
+    background: linear-gradient(135deg, rgba(79, 110, 247, 0.14), rgba(79, 110, 247, 0.06));
+    box-shadow: 0 0 20px rgba(79, 110, 247, 0.12);
+}
+
+html[data-theme="light"] .nav-mobile-panel {
+    background: rgba(255, 255, 255, 0.95);
+    border-color: rgba(0, 0, 0, 0.08);
+}
+
+html[data-theme="light"] .nav-mobile {
+    background: rgba(244, 246, 251, 0.6);
 }
 
 .ambient-orb.a { background: var(--orb-a); }
@@ -79,6 +107,10 @@ html[data-theme="light"] .ambient-vignette {
 .slot-btn,
 .cal-day:hover:not(:disabled) {
     background: var(--input-bg);
+}
+
+html[data-theme="light"] .site-header .header-cta.button {
+    border-radius: 9999px;
 }
 
 html[data-theme="light"] .button-primary {

@@ -27,7 +27,7 @@
     @include('partials.site-header')
 
     @hasSection('full-width')
-        <main class="hero-landing">
+        <main class="hero-landing has-hero-video">
             @yield('full-width')
         </main>
     @else

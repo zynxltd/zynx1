@@ -13,6 +13,14 @@
 
 @section('full-width')
     <section class="home-hero">
+        <div class="hero-media" aria-hidden="true">
+            <video class="hero-video" autoplay muted loop playsinline preload="auto" poster="">
+                <source src="{{ asset('videos/hero-bg.mp4') }}" type="video/mp4" />
+            </video>
+            <canvas class="hero-video-canvas" id="hero-video-canvas"></canvas>
+            <div class="hero-media-overlay"></div>
+        </div>
+
         <div class="container home-hero-layout">
             <div class="home-hero-intro">
                 <p class="home-hero-eyebrow">
@@ -181,5 +189,6 @@
 @endsection
 
 @push('scripts')
+    <script src="{{ asset('js/hero-video.js') }}" defer></script>
     <script src="{{ asset('js/hero-scroll.js') }}" defer></script>
 @endpush
