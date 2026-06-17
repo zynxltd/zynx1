@@ -54,7 +54,7 @@
                     @else
                     <form method="POST" action="{{ route('contact.store') }}" class="form-grid">
                         @csrf
-                        <div class="hp-field" aria-hidden="true">
+                        <div class="hp-field" aria-hidden="true" style="position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden;">
                             <label for="website">Website</label>
                             <input type="text" id="website" name="website" value="" tabindex="-1" autocomplete="off" />
                         </div>

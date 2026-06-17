@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Carbon;
 
 class StoreContactMessageRequest extends FormRequest
 {
@@ -29,7 +30,7 @@ class StoreContactMessageRequest extends FormRequest
 
         $loadedAt = session('contact_form_loaded_at');
 
-        if (! $loadedAt || now()->diffInSeconds($loadedAt) < 3) {
+        if (! $loadedAt || Carbon::parse($loadedAt)->diffInSeconds(now()) < 3) {
             return true;
         }
 
