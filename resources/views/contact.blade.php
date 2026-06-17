@@ -24,6 +24,13 @@
                 <div class="alert alert-success" role="status">{{ session('success') }}</div>
             @endif
 
+            @if ($ipBlocked || session('blocked'))
+                <div class="alert alert-error" role="alert">
+                    You have reached the maximum number of contact form submissions from your connection.
+                    If you still need to reach us, please email <a href="mailto:hello@zynx1.co.uk" style="color:var(--accent);">hello@zynx1.co.uk</a> directly or <a href="{{ route('book') }}" style="color:var(--accent);">book a consultation</a>.
+                </div>
+            @endif
+
             <div class="contact-layout">
                 <div class="card">
                     <h2 style="margin:0 0 1rem;font-size:1.1rem;">Contact details</h2>
@@ -40,8 +47,17 @@
                 </div>
 
                 <div class="card">
+                    @if ($ipBlocked || session('blocked'))
+                        <p style="margin:0;color:var(--muted);font-size:0.92rem;">
+                            The contact form is unavailable from your connection. Please use the email address or booking link on the left.
+                        </p>
+                    @else
                     <form method="POST" action="{{ route('contact.store') }}" class="form-grid">
                         @csrf
+                        <div class="hp-field" aria-hidden="true">
+                            <label for="website">Website</label>
+                            <input type="text" id="website" name="website" value="" tabindex="-1" autocomplete="off" />
+                        </div>
                         <div class="field">
                             <label for="name">Name *</label>
                             <input type="text" id="name" name="name" value="{{ old('name') }}" required autocomplete="name" />
@@ -63,6 +79,7 @@
                         </div>
                         <button type="submit" class="button button-primary">Send message</button>
                     </form>
+                    @endif
                 </div>
             </div>
         </div>

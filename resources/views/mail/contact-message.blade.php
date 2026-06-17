@@ -15,6 +15,10 @@ Someone submitted the contact form on zynx1.
 
 {{ $contactMessage->message }}
 
+@if ($contactMessage->ip_address)
+**IP address:** {{ $contactMessage->ip_address }}
+@endif
+
 Thanks,<br>
 {{ config('app.name') }}
 </x-mail::message>

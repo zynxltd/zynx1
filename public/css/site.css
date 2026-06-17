@@ -1478,6 +1478,14 @@ html[data-theme="light"] .hero-media-overlay {
     color: var(--danger);
 }
 
+.hp-field {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
 .field.is-invalid input,
 .field.is-invalid textarea {
     border-color: rgba(248, 113, 113, 0.6);

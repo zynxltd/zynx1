@@ -17,7 +17,9 @@ Route::post('/book', [ConsultationController::class, 'store'])->name('book.store
 Route::get('/book/confirm/{consultation}', [ConsultationController::class, 'confirm'])->name('book.confirm');
 
 Route::get('/contact', [ContactController::class, 'create'])->name('contact');
-Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
+Route::post('/contact', [ContactController::class, 'store'])
+    ->middleware('throttle:5,1')
+    ->name('contact.store');
 
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 Route::get('/robots.txt', RobotsController::class)->name('robots');
