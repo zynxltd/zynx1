@@ -2,8 +2,11 @@
 
 namespace App\Http\Requests;
 
+use App\Services\TurnstileVerifier;
+use App\Support\ClientIp;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Carbon;
+use Illuminate\Validation\Validator;
 
 class StoreContactMessageRequest extends FormRequest
 {
@@ -20,6 +23,25 @@ class StoreContactMessageRequest extends FormRequest
             'company' => ['nullable', 'string', 'max:120'],
             'message' => ['required', 'string', 'max:5000'],
         ];
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator) {
+            if ($validator->errors()->isNotEmpty()) {
+                return;
+            }
+
+            $verifier = app(TurnstileVerifier::class);
+
+            if (! $verifier->isEnabled()) {
+                return;
+            }
+
+            if (! $verifier->verify($this->input('cf-turnstile-response'), ClientIp::from($this))) {
+                $validator->errors()->add('captcha', 'Please complete the captcha verification.');
+            }
+        });
     }
 
     public function isSpam(): bool

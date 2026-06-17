@@ -3,8 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\ContactMessage;
+use App\Services\TurnstileVerifier;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\RateLimiter;
 use Tests\TestCase;
 
 class ContactFormTest extends TestCase
@@ -21,11 +23,17 @@ class ContactFormTest extends TestCase
         ];
     }
 
-    private function submitContact(array $payload = [])
+    private function submitContact(array $payload = [], array $server = [])
     {
-        return $this->withSession([
+        $request = $this->withSession([
             'contact_form_loaded_at' => now()->subSeconds(5),
-        ])->post('/contact', $payload ?: $this->validPayload());
+        ]);
+
+        if ($server !== []) {
+            $request = $request->withServerVariables($server);
+        }
+
+        return $request->post('/contact', $payload ?: $this->validPayload());
     }
 
     public function test_contact_page_loads(): void
@@ -57,9 +65,7 @@ class ContactFormTest extends TestCase
     {
         Mail::fake();
 
-        $this->withSession([
-            'contact_form_loaded_at' => now()->subSeconds(5),
-        ])->post('/contact', [
+        $this->submitContact([
             ...$this->validPayload(),
             'website' => 'https://spam.example',
         ])
@@ -93,6 +99,7 @@ class ContactFormTest extends TestCase
                 'message' => 'Earlier message',
                 'ip_address' => '203.0.113.10',
             ]);
+            ContactMessage::recordSubmission('203.0.113.10');
         }
 
         $this->withServerVariables(['REMOTE_ADDR' => '203.0.113.10'])
@@ -101,19 +108,32 @@ class ContactFormTest extends TestCase
             ->assertSee('maximum number of contact form submissions')
             ->assertDontSee('Send message');
 
-        $this->withServerVariables(['REMOTE_ADDR' => '203.0.113.10'])
-            ->post('/contact', $this->validPayload())
+        $this->submitContact(server: ['REMOTE_ADDR' => '203.0.113.10'])
             ->assertRedirect(route('contact'))
             ->assertSessionHas('blocked');
 
         $this->assertDatabaseCount('contact_messages', 3);
     }
 
+    public function test_cloudflare_client_ip_header_is_used(): void
+    {
+        Mail::fake();
+
+        $this->submitContact(server: [
+            'REMOTE_ADDR' => '10.0.0.1',
+            'HTTP_CF_CONNECTING_IP' => '198.51.100.25',
+        ])
+            ->assertRedirect(route('contact'))
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('contact_messages', [
+            'ip_address' => '198.51.100.25',
+        ]);
+    }
+
     public function test_submission_requires_valid_fields(): void
     {
-        $this->withSession([
-            'contact_form_loaded_at' => now()->subSeconds(5),
-        ])->post('/contact', [
+        $this->submitContact([
             'name' => '',
             'email' => 'not-an-email',
             'message' => '',
@@ -121,5 +141,47 @@ class ContactFormTest extends TestCase
             ->assertSessionHasErrors(['name', 'email', 'message']);
 
         $this->assertDatabaseCount('contact_messages', 0);
+    }
+
+    public function test_turnstile_is_required_when_enabled(): void
+    {
+        config([
+            'services.turnstile.site_key' => 'test-site-key',
+            'services.turnstile.secret' => 'test-secret-key',
+        ]);
+
+        $this->submitContact()
+            ->assertSessionHasErrors('captcha');
+    }
+
+    public function test_turnstile_verifies_token_when_enabled(): void
+    {
+        config([
+            'services.turnstile.site_key' => 'test-site-key',
+            'services.turnstile.secret' => 'test-secret-key',
+        ]);
+
+        $this->mock(TurnstileVerifier::class, function ($mock) {
+            $mock->shouldReceive('isEnabled')->andReturn(true);
+            $mock->shouldReceive('verify')->once()->andReturn(true);
+        });
+
+        Mail::fake();
+
+        $this->submitContact([
+            ...$this->validPayload(),
+            'cf-turnstile-response' => 'valid-token',
+        ])
+            ->assertRedirect(route('contact'))
+            ->assertSessionHas('success');
+    }
+
+    protected function tearDown(): void
+    {
+        RateLimiter::clear('contact-form:127.0.0.1');
+        RateLimiter::clear('contact-form:203.0.113.10');
+        RateLimiter::clear('contact-form:198.51.100.25');
+
+        parent::tearDown();
     }
 }

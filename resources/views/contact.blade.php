@@ -77,6 +77,12 @@
                             <textarea id="message" name="message" rows="5" required>{{ old('message') }}</textarea>
                             @error('message')<p class="field-error">{{ $message }}</p>@enderror
                         </div>
+                        @if ($turnstileSiteKey)
+                            <div class="field">
+                                <div class="cf-turnstile" data-sitekey="{{ $turnstileSiteKey }}" data-theme="dark"></div>
+                                @error('captcha')<p class="field-error">{{ $message }}</p>@enderror
+                            </div>
+                        @endif
                         <button type="submit" class="button button-primary">Send message</button>
                     </form>
                     @endif
@@ -87,6 +93,9 @@
 @endsection
 
 @push('head')
+@if ($turnstileSiteKey ?? config('services.turnstile.site_key'))
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+@endif
 <script type="application/ld+json">
 {!! json_encode([
     '@context' => 'https://schema.org',
