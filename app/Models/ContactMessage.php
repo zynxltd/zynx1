@@ -17,7 +17,21 @@ class ContactMessage extends Model
         'company',
         'message',
         'ip_address',
+        'user_agent',
+        'device_type',
+        'browser',
+        'platform',
+        'accept_language',
+        'referer',
+        'client_metadata',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'client_metadata' => 'array',
+        ];
+    }
 
     public static function ipIsBlocked(?string $ip): bool
     {

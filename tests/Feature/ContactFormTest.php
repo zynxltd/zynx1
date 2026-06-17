@@ -48,7 +48,12 @@ class ContactFormTest extends TestCase
     {
         Mail::fake();
 
-        $this->submitContact()
+        $this->submitContact(server: [
+            'HTTP_USER_AGENT' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'HTTP_ACCEPT_LANGUAGE' => 'en-GB,en;q=0.9',
+            'HTTP_REFERER' => 'https://zynx1.co.uk/',
+            'HTTP_CF_IPCOUNTRY' => 'GB',
+        ])
             ->assertRedirect(route('contact'))
             ->assertSessionHas('success');
 
@@ -58,7 +63,15 @@ class ContactFormTest extends TestCase
             'company' => 'Acme Ltd',
             'message' => 'I would like to discuss a project.',
             'ip_address' => '127.0.0.1',
+            'device_type' => 'desktop',
+            'browser' => 'Chrome',
+            'platform' => 'macOS',
+            'accept_language' => 'en-GB,en;q=0.9',
+            'referer' => 'https://zynx1.co.uk/',
         ]);
+
+        $message = ContactMessage::first();
+        $this->assertSame('GB', $message->client_metadata['cf_ipcountry'] ?? null);
     }
 
     public function test_honeypot_submission_is_silently_rejected(): void
