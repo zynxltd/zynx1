@@ -6,9 +6,9 @@ use App\Http\Requests\StoreContactMessageRequest;
 use App\Mail\ContactMessageMail;
 use App\Models\ContactMessage;
 use App\Support\ClientContext;
+use App\Support\ContactFormLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
 class ContactController extends Controller
@@ -31,12 +31,10 @@ class ContactController extends Controller
     public function store(StoreContactMessageRequest $request): RedirectResponse
     {
         $client = ClientContext::from($request);
+        $clientContext = $client->toLogContext();
 
         if (ContactMessage::ipIsBlocked($client->ipAddress)) {
-            Log::warning('Contact form submission blocked', [
-                'email' => $request->input('email'),
-                ...$client->toLogContext(),
-            ]);
+            ContactFormLogger::blocked($request->input('email'), $clientContext);
 
             return redirect()
                 ->route('contact')
@@ -44,11 +42,11 @@ class ContactController extends Controller
         }
 
         if ($request->isSpam()) {
-            Log::info('Contact form spam rejected', [
-                'email' => $request->input('email'),
-                'honeypot' => filled($request->input('website')),
-                ...$client->toLogContext(),
-            ]);
+            ContactFormLogger::spamRejected(
+                $request->input('email'),
+                filled($request->input('website')),
+                $clientContext,
+            );
 
             return redirect()
                 ->route('contact')
@@ -62,13 +60,11 @@ class ContactController extends Controller
 
         ContactMessage::recordSubmission($client->ipAddress);
 
-        Log::info('Contact form submission received', [
-            'contact_message_id' => $contactMessage->id,
-            'name' => $contactMessage->name,
-            'email' => $contactMessage->email,
-            'company' => $contactMessage->company,
-            ...$client->toLogContext(),
-        ]);
+        ContactFormLogger::received(
+            $contactMessage->id,
+            $request->safe()->only(['name', 'email', 'company']),
+            $clientContext,
+        );
 
         try {
             Mail::to(config('booking.notification_email'))
