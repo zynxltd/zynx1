@@ -9,6 +9,7 @@ use App\Support\ClientContext;
 use App\Support\ContactFormLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
 
 class ContactController extends Controller
